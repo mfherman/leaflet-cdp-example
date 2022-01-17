@@ -5,15 +5,18 @@ library(leaflet.extras)
 library(sf)
 library(htmltools)
 library(scales)
+library(rmapshaper)
+library(htmlwidgets)
 
 places <- get_decennial(
   geography = "place",
-  state = c("VT", "NH", "MA", "ME", "CT", "RI"),
+  state = c("ME", "MA", "NH", "VT", "CT", "RI"),
   variables = "P3_001N",
   year = 2020,
   geometry = TRUE
   ) %>%
   st_transform(4326) %>%
+  ms_simplify() %>%
   mutate(
     label = paste0(
       "<b>", NAME, "</b><br>",
@@ -51,4 +54,4 @@ m <- leaflet(places) %>%
     )
   )
 
-htmlwidgets::saveWidget(m, "docs/leaflet-cdp-ex.html", selfcontained = FALSE)
+saveWidget(m, "docs/leaflet-cdp-ex.html", selfcontained = FALSE)
