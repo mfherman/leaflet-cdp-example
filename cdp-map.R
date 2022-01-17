@@ -10,7 +10,6 @@ library(htmlwidgets)
 
 places <- get_decennial(
   geography = "place",
-  state = c("ME", "MA", "NH", "VT", "CT", "RI"),
   variables = "P3_001N",
   year = 2020,
   geometry = TRUE
@@ -26,14 +25,16 @@ places <- get_decennial(
     label = map(label, HTML)
   )
 
-m <- leaflet(places) %>%
+m <- places %>%
+  leaflet() %>%
   addPolygons(
     group = "Places",
     weight = 1.5,
     color = "white",
     fillColor = "purple",
     fillOpacity = 0.7,
-    label = ~label,
+    label = ~NAME,
+    popup = ~label,
     highlightOptions = highlightOptions(
       weight = 3,
       opacity = 1,
@@ -52,6 +53,11 @@ m <- leaflet(places) %>%
       hideMarkerOnCollapse = TRUE,
       textPlaceholder = "Search Census-designated places"
     )
+  ) %>%
+  setView(
+    zoom = 7,
+    lat = 40.8,
+    lng = -73.9
   )
 
 saveWidget(m, "docs/leaflet-cdp-ex.html", selfcontained = FALSE)
