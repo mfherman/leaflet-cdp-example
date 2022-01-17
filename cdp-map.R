@@ -8,24 +8,35 @@ library(scales)
 library(rmapshaper)
 library(htmlwidgets)
 
+# get census data and geometry
 places <- get_decennial(
   geography = "place",
   variables = "P3_001N",
   year = 2020,
   geometry = TRUE
   ) %>%
-  st_transform(4326) %>%
-  ms_simplify() %>%
-  mutate(
-    label = paste0(
+  st_transform(4326) %>%  # leaflet needs wgs84
+  ms_simplify()           # simplify polygons for faster render
+
+# add popup var
+to_map <- places %>%
+   mutate(
+    url = paste0(
+      "https://data.census.gov/cedsci/table?g=1600000US",
+      GEOID,
+      "&y=2020&d=DEC%20Redistricting%20Data%20%28PL%2094-171%29&tid=DECENNIALPL2020.P3"
+    ),
+    popup = paste0(
       "<b>", NAME, "</b><br>",
       "GEOID: ", GEOID, "<br>",
-      "18+ population: ", comma(value, 1)
+      "18+ population: ", comma(value, 1), "<br>",
+      "<a href = ", url, " target='_blank'>View Census data</a>"
     ),
-    label = map(label, HTML)
+    popup = map(popup, HTML)
   )
 
-m <- places %>%
+# make a leaflet map
+m <- to_map %>%
   leaflet() %>%
   addPolygons(
     group = "Places",
@@ -34,7 +45,7 @@ m <- places %>%
     fillColor = "purple",
     fillOpacity = 0.7,
     label = ~NAME,
-    popup = ~label,
+    popup = ~popup,
     highlightOptions = highlightOptions(
       weight = 3,
       opacity = 1,
@@ -60,4 +71,5 @@ m <- places %>%
     lng = -73.9
   )
 
+# save map as an html widget
 saveWidget(m, "docs/leaflet-cdp-ex.html", selfcontained = FALSE)
